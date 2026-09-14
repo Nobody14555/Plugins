@@ -1,0 +1,152 @@
+{% extends 'CRB_app/base.html' %}
+{% block title %}Book room{% endblock title%}
+{% block content %}
+
+<div class="p-4 bg-light">
+<div class="container" style="max-width: 1180px;">
+
+  <div class="card p-4 shadow-sm border-0">
+    <div class="row g-4 align-items-center">
+      
+      <!-- Left Column: 640x426 Landscape Image -->
+      <div class="col-lg-6 col-md-12">
+        <div class="border rounded overflow-hidden shadow-sm bg-light" style="width: 100%; aspect-ratio: 640 / 426;">
+          {% if room.room_image %}
+            <img src="{{ room.room_image.url }}" 
+                 class="w-100 h-100 object-fit-cover d-block" 
+                 alt="{{ room.room_name }}">
+          {% else %}
+            <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted fw-semibold">
+              No Image Available
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Right Column: Room Details, 6x4 Grid & Controls -->
+      <div class="col-lg-6 col-md-12">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+          <div>
+            <h4 class="fw-bold mb-1">{{ room.room_name }}</h4>
+            <p class="text-muted small mb-0">Capacity: {{ room.capacity }}</p>
+            <p class="text-muted small mb-0">Amenities: {{ room.amenities }}</p>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <!-- Date Picker -->
+            <input type="date" 
+                   id="bookingDatePicker" 
+                   class="form-control form-control-sm" 
+                   value="{{ selected_date }}" 
+                   min="{{ today_date }}">
+
+            <!-- AM/PM Switch -->
+            <div class="btn-group btn-group-sm">
+              <a href="?date={{ selected_date }}&meridiem=AM" class="btn {% if selected_meridiem == 'AM' %}btn-dark{% else %}btn-outline-dark{% endif %}">AM</a>
+              <a href="?date={{ selected_date }}&meridiem=PM" class="btn {% if selected_meridiem == 'PM' %}btn-dark{% else %}btn-outline-dark{% endif %}">PM</a>
+            </div>
+          </div>
+        </div>
+
+        <hr class="my-3">
+
+        <form method="POST">
+          {% csrf_token %}
+
+          <!-- Hidden Input to forward selected date on booking -->
+          <input type="hidden" name="booking_date" value="{{ selected_date }}">
+
+          <div class="slot-grid">
+            {% for slot in slots %}
+              <div>
+                {% if slot.status == 'available' %}
+                  <input type="checkbox" name="slots" value="{{ slot.id }}" id="slot_{{ slot.id }}" class="btn-check slot-input">
+                  <label class="slot-box" for="slot_{{ slot.id }}">
+                    <div>{{ slot.start }}</div>
+                    <div>{{ slot.end }}</div>
+                  </label>
+                {% else %}
+                  <div class="slot-box {{ slot.status }}">
+                    <div>{{ slot.start }}</div>
+                    <div>{{ slot.end }}</div>
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+
+          <!-- Legend -->
+          <div class="d-flex flex-wrap gap-3 mt-3 pt-2 border-top small text-muted">
+            <div class="d-flex align-items-center"><span class="legend-box border border-success text-success bg-white p-1 rounded"> Available</span></div>
+            <div class="d-flex align-items-center"><span class="legend-box border border-primary text-primary bg-white p-1 rounded"> Selected</span></div>
+            <div class="d-flex align-items-center"><span class="legend-box border border-danger text-danger bg-white p-1 rounded"> Booked</span></div>
+            <div class="d-flex align-items-center"><span class="legend-box border border-secondary text-secondary bg-white p-1 rounded"> Maintenance</span></div>
+          </div>
+
+          <!-- <button type="submit" id="bookBtn" class="btn btn-primary w-100 mt-4 fw-semibold" disabled>Book Room</button> -->
+           <!-- Submit Button: Dynamic for Admin vs Regular User -->
+          {% if request.user.username == "Admin" %}
+            <button type="submit" 
+                    name="action_type" 
+                    value="maintenance" 
+                    id="bookBtn" 
+                    class="btn btn-secondary w-100 mt-4 fw-semibold" 
+                    disabled>
+              <i class="bi bi-tools me-1"></i> Mark Maintenance
+            </button>
+          {% else %}
+            <button type="submit" 
+                    name="action_type" 
+                    value="book" 
+                    id="bookBtn" 
+                    class="btn btn-primary w-100 mt-4 fw-semibold" 
+                    disabled>
+              Book Room
+            </button>
+          {% endif %}
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    // Reload page with new date query param on date change
+    const datePicker = document.getElementById('bookingDatePicker');
+    if (datePicker) {
+      datePicker.addEventListener('change', function() {
+        const newDate = this.value;
+        const currentMeridiem = "{{ selected_meridiem }}";
+        window.location.href = `?date=${newDate}&meridiem=${currentMeridiem}`;
+      });
+    }
+
+    // Slot neighbor continuity selection
+    const checkboxes = Array.from(document.querySelectorAll('.slot-input'));
+    const bookBtn = document.getElementById('bookBtn');
+
+    checkboxes.forEach(cb => {
+      cb.addEventListener('change', () => {
+        const checked = checkboxes.filter(c => c.checked);
+        bookBtn.disabled = checked.length === 0;
+
+        if (checked.length < 2) return;
+
+        const ids = checked.map(c => parseInt(c.value)).sort((a, b) => a - b);
+        for (let i = 0; i < ids.length - 1; i++) {
+          if (ids[i + 1] !== ids[i] + 1) {
+            alert("Please select continuous adjacent slots only!");
+            cb.checked = false;
+            bookBtn.disabled = checkboxes.filter(c => c.checked).length === 0;
+            break;
+          }
+        }
+      });
+    });
+  });
+</script>
+
+{% endblock content %}
