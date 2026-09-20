@@ -1,0 +1,50 @@
+<a id="logoToggle" class="navbar-brand fw-bold d-flex align-items-center gap-2">
+    <img src="{% static 'CRB_app/ea.png' %}" alt="Logo" style="width: 40px; height: 40px;">
+</a>
+
+.side-nav {
+    flex: 0 0 0;
+    overflow: hidden;
+    transition: flex-basis 0.3s ease;
+}
+
+.side-nav.open {
+    flex-basis: 25%;
+}
+
+<div class="d-flex flex-grow-1">
+
+    <!-- Hidden by default -->
+    <aside id="sideNav" class="side-nav bg-primary collapsed">
+        hello
+    </aside>
+
+    <main class="flex-grow-1">
+        {% block content %}
+        {% endblock content %}
+    </main>
+
+</div>
+
+<script>
+    const logo = document.getElementById("logoToggle");
+    const sideNav = document.getElementById("sideNav");
+
+    const sidebarState = localStorage.getItem("sidebarState");
+
+    if (sidebarState === "open") {
+        sideNav.classList.add("open");
+    }
+
+    logo.addEventListener("click", function () {
+
+        sideNav.classList.toggle("open");
+
+        if (sideNav.classList.contains("open")) {
+            localStorage.setItem("sidebarState", "open");
+        } else {
+            localStorage.setItem("sidebarState", "closed");
+        }
+
+    });
+</script>
