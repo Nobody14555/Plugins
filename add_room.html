@@ -1,0 +1,198 @@
+{% extends 'CRB_app/base.html' %}
+{% block title %} Add Room {% endblock title %}
+
+{% block content %}
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+  /* Custom toggle chips for amenities */
+  .amenity-chip input[type="checkbox"] {
+    display: none;
+  }
+  .amenity-chip label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.1rem;
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: #475569;
+    background-color: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .amenity-chip input[type="checkbox"]:checked + label {
+    background-color: #ecfdf5;
+    border-color: #10b981;
+    color: #065f46;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.15);
+  }
+  .amenity-chip label:hover {
+    border-color: #cbd5e1;
+    background-color: #f1f5f9;
+  }
+
+  /* File upload frame styling */
+  .upload-box {
+    border: 2px dashed #cbd5e1;
+    border-radius: 14px;
+    background-color: #f8fafc;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+  }
+  .upload-box:hover {
+    border-color: #10b981;
+    background-color: #f0fdf4;
+  }
+</style>
+
+<div class="container py-5 d-flex justify-content-center align-items-center min-vh-100">
+  <div class="card shadow-sm border-0 rounded-4 w-100" style="max-width: 720px;">
+    
+    <!-- Card Header -->
+    <div class="card-header bg-white border-0 pt-4 px-4 px-md-5 pb-0">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-success-subtle text-success p-2 rounded-3">
+            <i class="bi bi-door-open-fill fs-5"></i>
+          </span>
+          <h2 class="h5 fw-bold text-dark mb-0">Add Conference Room</h2>
+        </div>
+        <span class="badge rounded-pill text-bg-light text-muted border px-2 py-1 small">Facility Controls</span>
+      </div>
+      <p class="text-muted small mb-0">Register a new meeting zone and set default equipment availability.</p>
+      <hr class="my-3 text-muted opacity-25">
+    </div>
+
+    <!-- Card Body Form -->
+    <div class="card-body px-4 px-md-5 pt-2 pb-4">
+      <form id="add-room-form" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- 1. GENERAL ROOM DETAILS -->
+        <div class="mb-4">
+          <span class="text-uppercase tracking-wide text-success fw-bold small d-block mb-3">
+            <i class="bi bi-info-circle me-1"></i> 1. Room Specifications
+          </span>
+
+          <div class="row g-3">
+            <!-- Room Name -->
+            <div class="col-12 col-md-7">
+              <label class="form-label fw-semibold text-secondary small mb-1" for="room_name">
+                Room Name <span class="text-danger">*</span>
+              </label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted rounded-start-3">
+                  <i class="bi bi-building"></i>
+                </span>
+                <input 
+                  type="text" 
+                  id="room_name" 
+                  name="room_name" 
+                  pattern="[A-Za-z0-9\s]+" 
+                  placeholder="e.g. Apex Boardroom" 
+                  class="form-control rounded-end-3 py-2 border-start-0" 
+                  required
+                >
+              </div>
+            </div>
+
+            <!-- Capacity -->
+            <div class="col-12 col-md-5">
+              <label class="form-label fw-semibold text-secondary small mb-1" for="capacity">
+                Capacity (Seats) <span class="text-danger">*</span>
+              </label>
+              <div class="input-group">
+                <span class="input-group-text bg-light border-end-0 text-muted rounded-start-3">
+                  <i class="bi bi-people"></i>
+                </span>
+                <input 
+                  type="number" 
+                  id="capacity" 
+                  name="capacity" 
+                  min="1" 
+                  placeholder="e.g. 12" 
+                  class="form-control rounded-end-3 py-2 border-start-0" 
+                  required
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. AMENITIES -->
+        <div class="mb-4">
+          <span class="text-uppercase tracking-wide text-success fw-bold small d-block mb-2">
+            <i class="bi bi-gear-wide-connected me-1"></i> 2. Included Amenities
+          </span>
+          <p class="text-muted small mb-3">Select all hardware and utilities functional in this room.</p>
+
+          <div class="d-flex flex-wrap gap-2">
+            <div class="amenity-chip">
+              <input type="checkbox" id="amenity_tv" name="amenities" value="Tv">
+              <label for="amenity_tv">
+                <i class="bi bi-tv"></i> Smart TV / Display
+              </label>
+            </div>
+
+            <div class="amenity-chip">
+              <input type="checkbox" id="amenity_speaker" name="amenities" value="Speaker">
+              <label for="amenity_speaker">
+                <i class="bi bi-speaker"></i> Audio Speaker System
+              </label>
+            </div>
+
+            <div class="amenity-chip">
+              <input type="checkbox" id="amenity_board" name="amenities" value="White board">
+              <label for="amenity_board">
+                <i class="bi bi-easel"></i> Whiteboard
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. ROOM IMAGE -->
+        <div class="mb-4">
+          <span class="text-uppercase tracking-wide text-success fw-bold small d-block mb-2">
+            <i class="bi bi-image me-1"></i> 3. Room Showcase Photo
+          </span>
+
+          <div class="upload-box p-4 text-center">
+            <i class="bi bi-cloud-arrow-up text-success fs-1 mb-2 d-block"></i>
+            <label class="form-label fw-semibold text-dark small mb-1" for="room_image">
+              Choose an image file
+            </label>
+            <p class="text-muted small mb-3">Accepts JPG or JPEG formats up to standard web resolution.</p>
+            <input 
+              type="file" 
+              id="room_image" 
+              name="room_image" 
+              accept=".jpg, .jpeg, image/jpeg" 
+              class="form-control w-75 mx-auto rounded-3" 
+              required
+            >
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-end align-items-center gap-2 pt-3 border-top">
+          <button 
+            type="button" 
+            class="btn btn-light text-muted border px-4 rounded-3"
+            onclick="document.getElementById('add-room-form').reset();"
+          >
+            Clear
+          </button>
+          <button type="submit" id="submit-btn" class="btn btn-success px-4 rounded-3 shadow-sm fw-semibold">
+            <i class="bi bi-plus-circle me-1"></i> Add Room
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,168 @@
+{% extends 'CRB_app/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+  .hub-card {
+    border: 1px solid #eef2f6;
+    border-radius: 20px;
+    background: #ffffff;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.04);
+  }
+  .hub-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 36px rgba(15, 23, 42, 0.09);
+    border-color: #e2e8f0;
+  }
+  .img-frame {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    min-height: 240px;
+    height: 100%;
+  }
+  .img-frame img {
+    transition: transform 0.4s ease;
+  }
+  .hub-card:hover .img-frame img {
+    transform: scale(1.05);
+  }
+  .img-badge {
+    position: absolute;
+    bottom: 14px;
+    left: 14px;
+    background: rgba(15, 23, 42, 0.72);
+    backdrop-filter: blur(8px);
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+  }
+  .action-btn {
+    border-radius: 12px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 0.65rem 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.15s ease-in-out;
+  }
+  .action-btn:hover {
+    transform: translateY(-1px);
+  }
+</style>
+
+<div class="container py-5" style="max-width: 1080px;">
+
+  <!-- Hero / Header Section -->
+  <div class="mb-5 pb-2">
+    <div class="d-flex align-items-center gap-2 mb-2">
+      <span class="badge rounded-pill bg-success-subtle text-success fw-semibold px-3 py-1.5 font-monospace small">
+        <i class="bi bi-shield-check me-1"></i> ADMIN CONSOLE
+      </span>
+    </div>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
+      <div>
+        <h2 class="fw-bold text-dark mb-1 tracking-tight">System Management Hub</h2>
+        <p class="text-secondary mb-0">Direct operational control for conference facilities, reservation schedules, and personnel credentials.</p>
+      </div>
+      <div class="text-secondary small d-none d-md-block">
+        <i class="bi bi-circle-fill text-success me-1" style="font-size: 0.55rem;"></i> All systems operational
+      </div>
+    </div>
+  </div>
+
+  <!-- 1. Conference Rooms Hub Card -->
+  <div class="card hub-card mb-4 overflow-hidden border-0">
+    <div class="row g-0 p-3 p-lg-4 align-items-stretch">
+      <!-- Media Panel -->
+      <div class="col-md-5 col-lg-4">
+        <div class="img-frame bg-light">
+          <img 
+            src="{% static 'CRB_app/room.jpg' %}" 
+            class="w-100 h-100 object-fit-cover d-block" 
+            alt="Conference Rooms"
+          >
+          <div class="img-badge">
+            <i class="bi bi-door-open me-1"></i> Spaces &amp; Assets
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls Panel -->
+      <div class="col-md-7 col-lg-8 d-flex flex-column justify-content-between ps-md-4 pt-4 pt-md-0">
+        <div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h4 class="fw-bold text-dark mb-0">Conference Rooms</h4>
+            <span class="badge bg-secondary-subtle text-secondary border-0 px-2.5 py-1.5 rounded-pill small">Active Inventory</span>
+          </div>
+          <p class="text-muted small mb-4 pe-lg-4" style="line-height: 1.65;">
+            Configure meeting rooms, update hardware specifications (monitors, audio, boards), retire unused zones, and inspect live calendar allocations across all buildings.
+          </p>
+        </div>
+
+        <div class="pt-3 border-top d-flex flex-wrap gap-2">
+          <a href="{% url 'addRoomCRB' %}" class="btn btn-success action-btn shadow-sm">
+            <i class="bi bi-plus-circle-fill"></i> Add Room
+          </a>
+          <a href="{% url 'allBookingsCRB' %}" class="btn btn-outline-dark action-btn">
+            <i class="bi bi-calendar3"></i> View Bookings
+          </a>
+          <a href="{% url 'removeRoomCRB' %}" class="btn btn-light text-danger border action-btn ms-auto">
+            <i class="bi bi-trash3"></i> Remove Room
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. User Directory Hub Card -->
+  <div class="card hub-card mb-4 overflow-hidden border-0">
+    <div class="row g-0 p-3 p-lg-4 align-items-stretch">
+      <!-- Media Panel -->
+      <div class="col-md-5 col-lg-4">
+        <div class="img-frame bg-light">
+          <img 
+            src="{% static 'CRB_app/user.jpg' %}" 
+            class="w-100 h-100 object-fit-cover d-block" 
+            alt="User Directory"
+          >
+          <div class="img-badge">
+            <i class="bi bi-people me-1"></i> Access Control
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls Panel -->
+      <div class="col-md-7 col-lg-8 d-flex flex-column justify-content-between ps-md-4 pt-4 pt-md-0">
+        <div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h4 class="fw-bold text-dark mb-0">User Directory</h4>
+            <span class="badge bg-secondary-subtle text-secondary border-0 px-2.5 py-1.5 rounded-pill small">Staff &amp; Admins</span>
+          </div>
+          <p class="text-muted small mb-4 pe-lg-4" style="line-height: 1.65;">
+            Provision staff profiles, assign department booking permissions, reset multi-factor credentials, and revoke workspace access for former team members.
+          </p>
+        </div>
+
+        <div class="pt-3 border-top d-flex flex-wrap gap-2">
+          <a href="{% url 'adduserCRB' %}" class="btn btn-success action-btn shadow-sm">
+          <i class="bi bi-person-plus-fill"></i> Add User
+          </a>
+          <a href="#" class="btn btn-light text-danger border action-btn ms-auto">
+            <i class="bi bi-person-x"></i> Remove User
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

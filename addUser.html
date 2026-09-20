@@ -1,0 +1,134 @@
+{% extends 'CRB_app/base.html' %}
+{% block title %} Add User {% endblock title %}
+
+{% block content %}
+<div class="container py-2 d-flex justify-content-center align-items-center flex-grow-1">
+  <div class="card shadow-sm border-0 rounded-4 w-100" style="max-width: 680px;">
+    
+    <!-- Header -->
+    <div class="card-header bg-white border-0 pt-4 px-4 px-md-5 pb-0">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-success-subtle text-success p-2 rounded-3">
+            <i class="bi bi-person-plus-fill fs-5"></i>
+          </span>
+          <h2 class="h5 fw-bold text-dark mb-0">User Identification &amp; Credentials</h2>
+        </div>
+        <span class="badge rounded-pill text-bg-light text-muted border px-2 py-1 small">Admin Action</span>
+      </div>
+      <p class="text-muted small mb-0">Fields marked with an asterisk (<span class="text-danger">*</span>) are mandatory.</p>
+      <hr class="my-3 text-muted opacity-25">
+    </div>
+
+    <!-- Card Body Form -->
+    <div class="card-body px-4 px-md-5 pt-2 pb-4">
+      <form id="add-user-form" method="POST" novalidate>
+        {% csrf_token %}
+
+        <!-- Non-field Errors -->
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger alert-dismissible fade show rounded-3 small" role="alert">
+            <i class="bi bi-exclamation-circle-fill me-2"></i>
+            {{ form.non_field_errors.0 }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endif %}
+
+        <!-- 1. PERSONAL INFORMATION -->
+        <div class="mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-uppercase tracking-wide text-success fw-bold small">
+              <i class="bi bi-person-vcard me-1"></i> 1. Personal Details
+            </span>
+            <span class="text-muted" style="font-size: 0.75rem;">(Letters only active)</span>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label class="form-label fw-semibold text-secondary small mb-1" for="{{ form.first_name.id_for_label }}">
+                First Name <span class="text-danger">*</span>
+              </label>
+              {{ form.first_name }}
+              {% if form.first_name.errors %}
+                <div class="text-danger small mt-1"><i class="bi bi-x-circle me-1"></i>{{ form.first_name.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label class="form-label fw-semibold text-secondary small mb-1" for="{{ form.last_name.id_for_label }}">
+                Last Name <span class="text-danger">*</span>
+              </label>
+              {{ form.last_name }}
+              {% if form.last_name.errors %}
+                <div class="text-danger small mt-1"><i class="bi bi-x-circle me-1"></i>{{ form.last_name.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+          <div>
+            <label class="form-label fw-semibold text-secondary small mb-1" for="{{ form.username.id_for_label }}">
+              Email ID <span class="text-danger">*</span>
+            </label>
+            {{ form.email }}
+            {% if form.email.errors %}
+              <div class="text-danger small mt-1"><i class="bi bi-x-circle me-1"></i>{{ form.email.errors.0 }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- 2. ACCESS & CREDENTIALS -->
+        <div class="mb-4">
+          <span class="text-uppercase tracking-wide text-success fw-bold small d-block mb-3">
+            <i class="bi bi-shield-lock me-1"></i> 2. Access &amp; Credentials
+          </span>
+
+          <!-- Username -->
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-secondary small mb-1" for="{{ form.username.id_for_label }}">
+              Username <span class="text-danger">*</span>
+            </label>
+            {{ form.username }}
+            {% if form.username.errors %}
+              <div class="text-danger small mt-1"><i class="bi bi-x-circle me-1"></i>{{ form.username.errors.0 }}</div>
+            {% else %}
+              <div class="form-text text-muted small">Unique handle used to sign into the conference room portal.</div>
+            {% endif %}
+          </div>
+
+          <!-- Passwords Row -->
+          <div class="row g-3">
+            <div class="col-12 col-md-6">
+              <label class="form-label fw-semibold text-secondary small mb-1" for="{{ form.password1.id_for_label }}">
+                Password <span class="text-danger">*</span>
+              </label>
+              {{ form.password1 }}
+              {% if form.password1.errors %}
+                <div class="text-danger small mt-1"><i class="bi bi-x-circle me-1"></i>{{ form.password1.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="col-12 col-md-6">
+              <label class="form-label fw-semibold text-secondary small mb-1" for="{{ form.password2.id_for_label }}">
+                Confirm Password <span class="text-danger">*</span>
+              </label>
+              {{ form.password2 }}
+              {% if form.password2.errors %}
+                <div class="text-danger small mt-1"><i class="bi bi-x-circle me-1"></i>{{ form.password2.errors.0 }}</div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-end align-items-center gap-2 pt-3 border-top">
+          <button type="submit" id="submit-btn" class="btn btn-success px-4 rounded-3 shadow-sm">
+            <i class="bi bi-check2-circle me-1"></i> Create User
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock content %}
+
+{% block footer %}{% endblock footer %}
