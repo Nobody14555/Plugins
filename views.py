@@ -12,23 +12,6 @@ from .forms import LoginForm, NewUserForm
 
 from django.http import JsonResponse
 
-
-def loginUser(request):
-    if request.method == "POST":
-        form = LoginForm(request, data=request.POST)
-        if form.is_valid():
-            user = form.get_user()
-            login(request, user)
-            return redirect("homeCRB")
-    else:
-        form = LoginForm()
-    return render(request, 'CRB_app/login.html', {"form": form})
-
-
-def logoutUser(request):
-    logout(request)
-    return redirect('loginUserCRB')
-
 def addUser(request):
     if request.method=="POST":
         form=NewUserForm(request.POST)
@@ -40,11 +23,6 @@ def addUser(request):
         form=NewUserForm()
     return render(request,'CRB_app/addUser.html',{'form':form})
 
-@never_cache
-@login_required_no_next
-def home(request):
-    roomDetails = RoomDetails.objects.all().order_by("room_name")
-    return render(request, "CRB_app/home.html", {"room_details": roomDetails})
 
 def removeRoom(request):
     if request.method == "POST":
@@ -66,6 +44,7 @@ def removeRoom(request):
 
 
 def adminPanel(request):
+    #add authentication
     return render(request,'CRB_app/adminPanel.html')
 
 def addRoom(request):
@@ -92,10 +71,7 @@ def addRoom(request):
             return redirect('addRoomCRB')
         
     return render(request, 'CRB_app/add_room.html')
-
-# def removeRoom(request):
-#     roomDetails=RoomDetails.object.all()
-#     return render(request,'CRB_app/home.html',{'room_details':roomDetails})
+    
 
 def allBookings(request, filter="today"):
     today = timezone.localdate()
@@ -168,126 +144,6 @@ def allBookings(request, filter="today"):
     }
     return render(request, 'CRB_app/all_bookings.html', context)
 
-def getSlotTimes(slot_idx, meridiem="AM"):
-    base_minutes = 0 if meridiem == "AM" else 12 * 60
-    total_start = base_minutes + (slot_idx * 30)
-    total_end = total_start + 30
-
-    start_t = time(total_start // 60, total_start % 60)
-    if total_end == 1440:
-        end_t = time(23, 59, 59)
-    else:
-        end_t = time(total_end // 60, total_end % 60)
-
-    start_label = start_t.strftime("%I:%M").lstrip("0")
-    end_label = "12:00" if total_end == 1440 else end_t.strftime("%I:%M").lstrip("0")
-
-    return start_t, end_t, start_label, end_label
-
-
-def roomBooking(request, room_id):
-    room = get_object_or_404(RoomDetails, id=room_id)
-    today_date = date.today().strftime('%Y-%m-%d')
-    selected_date = request.GET.get('date', today_date)
-
-    # Handle Form Submission
-    if request.method == "POST":
-        booking_date = request.POST.get('booking_date', selected_date)
-        action_type = request.POST.get('action_type', 'book')
-        slot_ids = request.POST.getlist('slots')  # Retrieves all selected slot IDs
-
-        if slot_ids:
-            # Sort IDs to find starting and ending slots
-            slot_ids = sorted([int(sid) for sid in slot_ids])
-            first_idx = slot_ids[0] - 1
-            last_idx = slot_ids[-1] - 1
-
-            # Convert slot indices to HH:MM format (0 = 00:00, 1 = 00:30, ...)
-            start_hour = (first_idx * 30) // 60
-            start_min = (first_idx * 30) % 60
-            start_t = time(start_hour, start_min)
-
-            end_minutes = (last_idx + 1) * 30
-            if end_minutes >= 1440:
-                end_t = time(23, 59, 59)
-            else:
-                end_t = time(end_minutes // 60, end_minutes % 60)
-
-            is_maintenance = (action_type == 'maintenance')
-
-            # Create the booking record
-            BookingsDetails.objects.create(
-                room_name=room.room_name,
-                booked_by=request.user.username,
-                date=booking_date,
-                start_time=start_t,
-                end_time=end_t,
-                under_maintainance=is_maintenance
-            )
-
-            messages.success(request, f"Room {'marked for maintenance' if is_maintenance else 'booked'} successfully from {start_t.strftime('%I:%M %p').lstrip('0')} to {end_t.strftime('%I:%M %p').lstrip('0')}!")
-            return redirect(f"/book-room/{room_id}/?date={booking_date}")
-
-    # Fetch confirmed bookings for the day
-    confirmed_bookings = BookingsDetails.objects.filter(
-        room_name=room.room_name,
-        date=selected_date
-    )
-
-    # 48 half-hour slots
-    slots = []
-    current_time = datetime.strptime("00:00", "%H:%M")
-    end_limit = datetime.strptime("23:30", "%H:%M")
-    slot_id = 1
-
-    while True:
-        next_time = current_time + timedelta(minutes=30)
-        start_str = current_time.strftime("%H:%M")
-        end_str = "24:00" if current_time.strftime("%H:%M") == "23:30" else next_time.strftime("%H:%M")
-
-        start_display = current_time.strftime("%I:%M").lstrip("0")
-        if start_display.startswith(":"):
-            start_display = "12" + start_display
-            
-        time_label = f"{current_time.strftime('%I:%M %p').lstrip('0')} - {next_time.strftime('%I:%M %p').lstrip('0')}"
-
-        slot_status = 'available'
-        for b in confirmed_bookings:
-            b_start = b.start_time.strftime("%H:%M")
-            b_end = b.end_time.strftime("%H:%M")
-            if start_str < b_end and end_str > b_start:
-                slot_status = 'maintenance' if getattr(b, 'under_maintainance', False) else 'booked'
-                break
-
-        slots.append({
-            'id': slot_id,
-            'start': start_str,
-            'end': end_str,
-            'display_start': start_display,
-            'label': time_label,
-            'status': slot_status,
-        })
-
-        if current_time >= end_limit:
-            break
-        current_time = next_time
-        slot_id += 1
-
-    # 24 Hour headers
-    hours = []
-    h_time = datetime.strptime("00:00", "%H:%M")
-    for _ in range(24):
-        hours.append(h_time.strftime("%I %p").lstrip("0"))
-        h_time += timedelta(hours=1)
-
-    context = {
-        'room': room,
-        'slots': slots,
-        'hours': hours,
-        'selected_date': selected_date,
-        'today_date': today_date,
-    }
-    return render(request, 'room_booking.html', context)
 
 def myBookings(request, filter='today'):
     today = timezone.localdate()
