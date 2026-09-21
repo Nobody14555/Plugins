@@ -28,7 +28,45 @@ class BookingsDetails(models.Model):
         return f"{self.room_name} | {self.date} ({self.start_time} - {self.end_time})"
 
 
-# from .validators import validate_room_image
-# Create your models here.
-# class User(AbstractBaseUser):
-#     department=models.CharField(max_length=30, null=False)
+# New
+class NewUserForm(UserCreationForm):
+    first_name=forms.CharField(required=True, widget=forms.TextInput(attrs={
+            "class":"form-control",
+            "name":"firstname",
+            "placeholder":"Enter the firstname",
+        }))
+
+    last_name=forms.CharField(required=True, widget=forms.TextInput(attrs={
+            "class":"form-control",
+            "name":"lastname",
+            "placeholder":"Enter the lastname",
+        }))
+
+    email=forms.EmailField(required=True, widget=forms.EmailInput(attrs={
+        "class":"form-control",
+        "name":"email",
+        "placeholder":"Enter your email ID",
+    }))
+    
+    username=forms.CharField(required=True, widget=forms.TextInput(attrs={
+        "class":"form-control",
+        "name":"username",
+        "placeholder":"Enter the username",
+    }))
+
+    password1=forms.CharField(required=True, widget=forms.PasswordInput(attrs={
+        "class":"form-control",
+        "name":"password1",
+        "placeholder":"Create password",
+    }))
+
+    password2=forms.CharField(required=True, widget=forms.PasswordInput(attrs={
+        "class":"form-control",
+        "name":"password2",
+        "placeholder":"Confirm Password",
+    }))
+
+    class Meta:
+        model = User
+        fields = ('username', 'first_name', 'last_name', 'email')
+
